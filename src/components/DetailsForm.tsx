@@ -160,7 +160,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ selectedStyle, initialData, o
         </div>
 
         <Section title="B) 회사 소개" name="companyIntro" fileFieldName="companyIntroFiles" placeholder="비전, 역사, 주요 사업..." {...sectionProps} />
-        <Section title="C) 미션" name="missionIntro" fileFieldName="missionIntroFiles" placeholder="존재 이유와 사명..." {...sectionProps} />
+        <Section title="C) 미션&비전" name="missionIntro" fileFieldName="missionIntroFiles" placeholder="존재 이유와 사명, 미래 비전..." {...sectionProps} />
         <Section title="D) 핵심가치" name="coreValueIntro" fileFieldName="coreValueIntroFiles" placeholder="신뢰, 도전, 혁신..." {...sectionProps} />
         <Section title="E) Work Way" name="workWayIntro" fileFieldName="workWayIntroFiles" placeholder="일하는 방식, 협업 문화..." {...sectionProps} />
         <Section title="F) 인재상" name="talentIntro" fileFieldName="talentIntroFiles" placeholder="선호하는 동료의 모습..." {...sectionProps} />
