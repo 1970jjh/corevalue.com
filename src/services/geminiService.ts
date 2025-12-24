@@ -210,7 +210,7 @@ ${featurePrompts || 'Standard hover effects and smooth scroll'}
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-pro-preview-06-05",
+      model: "gemini-2.0-flash",
       contents: { parts },
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
