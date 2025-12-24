@@ -2,6 +2,83 @@
 import React, { useState, useRef } from 'react';
 import { LandingPageStyle, UserRequirements, UploadedFile } from '../types';
 
+interface SectionProps {
+  title: string;
+  subtitle?: string;
+  name?: string;
+  fileFieldName?: string;
+  placeholder?: string;
+  isRequired?: boolean;
+  children?: React.ReactNode;
+  formData: UserRequirements;
+  onTextChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onFileUpload: (e: React.ChangeEvent<HTMLInputElement>, fieldName: keyof UserRequirements) => void;
+  fileInputRefs: React.MutableRefObject<{ [key: string]: HTMLInputElement | null }>;
+}
+
+const Section: React.FC<SectionProps> = ({
+  title,
+  subtitle,
+  name,
+  fileFieldName,
+  placeholder,
+  isRequired = false,
+  children,
+  formData,
+  onTextChange,
+  onFileUpload,
+  fileInputRefs
+}) => (
+  <div className="bg-white border-4 border-black p-8 mb-10 shadow-brutalist relative">
+    <div className="absolute -top-4 -left-4 bg-black text-white px-3 py-1 font-black text-xs uppercase shadow-brutalist-hover">SECTION</div>
+    <label className="block text-2xl font-black text-black mb-2 uppercase tracking-tighter leading-none italic">
+      {title} {isRequired && <span className="text-red-600">*</span>}
+    </label>
+    {subtitle && <p className="text-sm font-bold text-gray-500 mb-6 italic">{subtitle}</p>}
+
+    {children ? children : (
+      <textarea
+        name={name}
+        value={(formData as any)[name!]}
+        onChange={onTextChange}
+        rows={5}
+        placeholder={placeholder}
+        className="w-full bg-gray-50 border-4 border-black px-6 py-4 text-black font-bold focus:bg-white focus:outline-none transition-all placeholder:text-gray-400 mb-4"
+        required={isRequired}
+      />
+    )}
+
+    {fileFieldName && (
+      <div className="flex flex-col gap-2">
+        <div
+          onClick={() => fileInputRefs.current[fileFieldName]?.click()}
+          className="inline-flex items-center gap-2 cursor-pointer bg-white border-2 border-black px-4 py-2 text-xs font-black uppercase hover:bg-gray-100 shadow-brutalist-hover w-fit transition-all active:translate-y-1 active:shadow-none"
+        >
+          <input
+            type="file"
+            multiple
+            accept="image/*,.pdf"
+            ref={el => { fileInputRefs.current[fileFieldName] = el; }}
+            onChange={(e) => onFileUpload(e, fileFieldName as keyof UserRequirements)}
+            className="hidden"
+          />
+          <span className="flex items-center gap-2">📁 파일 첨부 (PDF/이미지)</span>
+        </div>
+
+        {(formData[fileFieldName as keyof UserRequirements] as UploadedFile[]).length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-2">
+            {(formData[fileFieldName as keyof UserRequirements] as UploadedFile[]).map((f, i) => (
+              <span key={i} className="text-[10px] bg-black text-white font-black px-2 py-1 border border-black shadow-brutalist-hover uppercase tracking-tighter flex items-center gap-1">
+                {f.name.endsWith('.pdf') ? '📄' : '🖼️'} {f.name}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+);
+
 interface DetailsFormProps {
   selectedStyle: LandingPageStyle;
   initialData: UserRequirements;
@@ -41,56 +118,12 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ selectedStyle, initialData, o
     }));
   };
 
-  const Section = ({ title, subtitle, name, fileFieldName, placeholder, isRequired = false, children }: any) => (
-    <div className="bg-white border-4 border-black p-8 mb-10 shadow-brutalist relative">
-      <div className="absolute -top-4 -left-4 bg-black text-white px-3 py-1 font-black text-xs uppercase shadow-brutalist-hover">SECTION</div>
-      <label className="block text-2xl font-black text-black mb-2 uppercase tracking-tighter leading-none italic">
-        {title} {isRequired && <span className="text-red-600">*</span>}
-      </label>
-      {subtitle && <p className="text-sm font-bold text-gray-500 mb-6 italic">{subtitle}</p>}
-      
-      {children ? children : (
-        <textarea
-          name={name}
-          value={(formData as any)[name]}
-          onChange={handleChange}
-          rows={5}
-          placeholder={placeholder}
-          className="w-full bg-gray-50 border-4 border-black px-6 py-4 text-black font-bold focus:bg-white focus:outline-none transition-all placeholder:text-gray-400 mb-4"
-          required={isRequired}
-        />
-      )}
-
-      {fileFieldName && (
-        <div className="flex flex-col gap-2">
-          <div 
-            onClick={() => fileInputRefs.current[fileFieldName]?.click()}
-            className="inline-flex items-center gap-2 cursor-pointer bg-white border-2 border-black px-4 py-2 text-xs font-black uppercase hover:bg-gray-100 shadow-brutalist-hover w-fit transition-all active:translate-y-1 active:shadow-none"
-          >
-            <input 
-              type="file" 
-              multiple 
-              accept="image/*,.pdf"
-              ref={el => { fileInputRefs.current[fileFieldName] = el; }} 
-              onChange={(e) => handleFileUpload(e, fileFieldName)} 
-              className="hidden" 
-            />
-            <span className="flex items-center gap-2">📁 파일 첨부 (PDF/이미지)</span>
-          </div>
-          
-          {(formData[fileFieldName as keyof UserRequirements] as UploadedFile[]).length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {(formData[fileFieldName as keyof UserRequirements] as UploadedFile[]).map((f, i) => (
-                <span key={i} className="text-[10px] bg-black text-white font-black px-2 py-1 border border-black shadow-brutalist-hover uppercase tracking-tighter flex items-center gap-1">
-                  {f.name.endsWith('.pdf') ? '📄' : '🖼️'} {f.name}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
+  const sectionProps = {
+    formData,
+    onTextChange: handleChange,
+    onFileUpload: handleFileUpload,
+    fileInputRefs
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-16">
@@ -111,36 +144,37 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ selectedStyle, initialData, o
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div>
               <label className="block text-lg font-black text-black mb-3 uppercase">회사명 (필수) <span className="text-red-600">*</span></label>
-              <input 
-                type="text" name="companyName" value={formData.companyName} onChange={handleChange} 
-                className="w-full bg-gray-50 border-4 border-black px-6 py-4 text-black font-black focus:bg-white focus:outline-none shadow-brutalist-hover" required 
+              <input
+                type="text" name="companyName" value={formData.companyName} onChange={handleChange}
+                className="w-full bg-gray-50 border-4 border-black px-6 py-4 text-black font-black focus:bg-white focus:outline-none shadow-brutalist-hover" required
               />
             </div>
             <div>
               <label className="block text-lg font-black text-black mb-3 uppercase">홈페이지 링크 (선택)</label>
-              <input 
-                type="text" name="homepageUrl" value={formData.homepageUrl} onChange={handleChange} 
-                className="w-full bg-gray-50 border-4 border-black px-6 py-4 text-black font-black focus:bg-white focus:outline-none shadow-brutalist-hover" 
+              <input
+                type="text" name="homepageUrl" value={formData.homepageUrl} onChange={handleChange}
+                className="w-full bg-gray-50 border-4 border-black px-6 py-4 text-black font-black focus:bg-white focus:outline-none shadow-brutalist-hover"
               />
             </div>
           </div>
         </div>
 
-        <Section title="B) 회사 소개" name="companyIntro" fileFieldName="companyIntroFiles" placeholder="비전, 역사, 주요 사업..." />
-        <Section title="C) 미션" name="missionIntro" fileFieldName="missionIntroFiles" placeholder="존재 이유와 사명..." />
-        <Section title="D) 핵심가치" name="coreValueIntro" fileFieldName="coreValueIntroFiles" placeholder="신뢰, 도전, 혁신..." />
-        <Section title="E) Work Way" name="workWayIntro" fileFieldName="workWayIntroFiles" placeholder="일하는 방식, 협업 문화..." />
-        <Section title="F) 인재상" name="talentIntro" fileFieldName="talentIntroFiles" placeholder="선호하는 동료의 모습..." />
-        
+        <Section title="B) 회사 소개" name="companyIntro" fileFieldName="companyIntroFiles" placeholder="비전, 역사, 주요 사업..." {...sectionProps} />
+        <Section title="C) 미션" name="missionIntro" fileFieldName="missionIntroFiles" placeholder="존재 이유와 사명..." {...sectionProps} />
+        <Section title="D) 핵심가치" name="coreValueIntro" fileFieldName="coreValueIntroFiles" placeholder="신뢰, 도전, 혁신..." {...sectionProps} />
+        <Section title="E) Work Way" name="workWayIntro" fileFieldName="workWayIntroFiles" placeholder="일하는 방식, 협업 문화..." {...sectionProps} />
+        <Section title="F) 인재상" name="talentIntro" fileFieldName="talentIntroFiles" placeholder="선호하는 동료의 모습..." {...sectionProps} />
+
         {/* Guestbook Section */}
-        <Section 
-          title="G) 방명록" 
-          subtitle="사용자의 소중한 의견을 담을 섹션을 구성합니다." 
+        <Section
+          title="G) 방명록"
+          subtitle="사용자의 소중한 의견을 담을 섹션을 구성합니다."
           fileFieldName="guestbookFiles"
+          {...sectionProps}
         >
           <div className="space-y-6 mb-6">
             <div>
-              <label className="block text-lg font-black text-black mb-4 uppercase tracking-tight italic italic">사이트 사용에 대한 점수를 준다면? (1~10점)</label>
+              <label className="block text-lg font-black text-black mb-4 uppercase tracking-tight italic">사이트 사용에 대한 점수를 준다면? (1~10점)</label>
               <div className="flex gap-2 flex-wrap">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((val) => (
                   <button
@@ -168,12 +202,12 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ selectedStyle, initialData, o
           </div>
         </Section>
 
-        <Section title="H) 추가 요청사항" name="otherRequests" fileFieldName="otherRequestsFiles" placeholder="디자인 톤앤매너 등 자유롭게 작성..." />
+        <Section title="H) 추가 요청사항" name="otherRequests" fileFieldName="otherRequestsFiles" placeholder="디자인 톤앤매너 등 자유롭게 작성..." {...sectionProps} />
 
         <div className="bg-white border-4 border-black p-10 mb-16 shadow-brutalist relative">
           <div className="absolute -top-4 -left-4 bg-deep-purple text-white px-3 py-1 font-black text-xs uppercase shadow-brutalist-hover">GLOBAL STORAGE</div>
           <label className="block text-2xl font-black text-black mb-6 uppercase italic tracking-tighter leading-none">I) 기타 전체 참고자료 업로드 (최대 20개)</label>
-          <div 
+          <div
             onClick={() => fileInputRefs.current['refs']?.click()}
             className="border-4 border-dashed border-black bg-gray-50 p-12 text-center hover:bg-main-blue/5 cursor-pointer transition-all group"
           >
@@ -186,9 +220,9 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ selectedStyle, initialData, o
         <div className="bg-yellow-100 border-4 border-black p-8 mb-20 shadow-brutalist relative">
           <div className="absolute -top-4 -left-4 bg-black text-white px-3 py-1 font-black text-xs uppercase shadow-brutalist-hover">NAVIGATION</div>
           <label className="block text-lg font-black text-black mb-4 uppercase">상단 메뉴 구성 (쉼표로 구분)</label>
-          <input 
-            type="text" name="headerNavItems" value={formData.headerNavItems} onChange={handleChange} 
-            className="w-full bg-white border-4 border-black px-6 py-4 text-black font-black focus:outline-none shadow-brutalist-hover" 
+          <input
+            type="text" name="headerNavItems" value={formData.headerNavItems} onChange={handleChange}
+            className="w-full bg-white border-4 border-black px-6 py-4 text-black font-black focus:outline-none shadow-brutalist-hover"
           />
         </div>
 
