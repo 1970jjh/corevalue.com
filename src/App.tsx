@@ -1,6 +1,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { AppStep, LandingPageStyle, UserRequirements } from './types';
+import ApiKeyInput from './components/ApiKeyInput';
 import StyleSelector from './components/StyleSelector';
 import FeatureSelector from './components/FeatureSelector';
 import DetailsForm from './components/DetailsForm';
@@ -8,7 +9,8 @@ import Preview from './components/Preview';
 import { generateLandingPage } from './services/geminiService';
 
 const App: React.FC = () => {
-  const [step, setStep] = useState<AppStep>(AppStep.SELECT_STYLE);
+  const [step, setStep] = useState<AppStep>(AppStep.API_KEY_INPUT);
+  const [apiKey, setApiKey] = useState<string>('');
   const [selectedStyle, setSelectedStyle] = useState<LandingPageStyle | null>(null);
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>([]);
   const [generatedCode, setGeneratedCode] = useState<string>('');
@@ -31,8 +33,8 @@ const App: React.FC = () => {
     workWayIntroFiles: [],
     talentIntro: '',
     talentIntroFiles: [],
-    guestbookRating: '10', 
-    guestbookComment: '', 
+    guestbookRating: '10',
+    guestbookComment: '',
     guestbookFiles: [],
     otherRequests: '',
     otherRequestsFiles: [],
@@ -40,6 +42,11 @@ const App: React.FC = () => {
     uploadedFiles: [],
     selectedFeatureIds: [],
   });
+
+  const handleApiKeySubmit = (key: string) => {
+    setApiKey(key);
+    setStep(AppStep.SELECT_STYLE);
+  };
 
   const handleStyleSelect = (style: LandingPageStyle, customAssets?: { logoUrl?: string; homepageUrl?: string; customStyleFiles: any[] }) => {
     setSelectedStyle(style);
@@ -60,7 +67,7 @@ const App: React.FC = () => {
   };
 
   const handleDetailsSubmit = useCallback(async (data: UserRequirements) => {
-    if (!selectedStyle) return;
+    if (!selectedStyle || !apiKey) return;
 
     setRequirements(data);
     setStep(AppStep.GENERATING);
@@ -73,17 +80,17 @@ const App: React.FC = () => {
     };
 
     try {
-      const code = await generateLandingPage(selectedStyle, finalRequirements);
+      const code = await generateLandingPage(selectedStyle, finalRequirements, apiKey);
       setGeneratedCode(code);
       setStep(AppStep.PREVIEW);
     } catch (err) {
       console.error(err);
-      setError('랜딩 페이지 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      setError('랜딩 페이지 생성 중 오류가 발생했습니다. API 키를 확인하고 다시 시도해주세요.');
       setStep(AppStep.INPUT_DETAILS);
     } finally {
       setIsGenerating(false);
     }
-  }, [selectedStyle, selectedFeatureIds]);
+  }, [selectedStyle, selectedFeatureIds, apiKey]);
 
   const handleReset = () => {
     if (confirm('모든 입력 내용이 초기화됩니다. 홈으로 돌아가시겠습니까?')) {
@@ -119,12 +126,22 @@ const App: React.FC = () => {
     }
   };
 
+  const getStepNumber = () => {
+    switch (step) {
+      case AppStep.SELECT_STYLE: return '1';
+      case AppStep.SELECT_FEATURES: return '2';
+      case AppStep.INPUT_DETAILS: return '3';
+      case AppStep.GENERATING: return '4';
+      default: return '0';
+    }
+  };
+
   if (step === AppStep.PREVIEW && generatedCode) {
     return (
-      <Preview 
-        htmlCode={generatedCode} 
-        onReset={handleReset} 
-        onEdit={() => setStep(AppStep.INPUT_DETAILS)} 
+      <Preview
+        htmlCode={generatedCode}
+        onReset={handleReset}
+        onEdit={() => setStep(AppStep.INPUT_DETAILS)}
         companyName={requirements.companyName}
       />
     );
@@ -134,7 +151,7 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-gray-100 text-black font-sans flex flex-col selection:bg-main-blue selection:text-white">
       <header className="border-b-4 border-black bg-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between relative">
-          <div className="flex items-center gap-2 cursor-pointer z-20" onClick={handleReset}>
+          <div className="flex items-center gap-2 cursor-pointer z-20" onClick={() => step !== AppStep.API_KEY_INPUT && handleReset()}>
             <div className="w-10 h-10 bg-black border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_white]">
               <span className="text-white text-xs font-black">AI</span>
             </div>
@@ -148,9 +165,14 @@ const App: React.FC = () => {
           </div>
 
           <div className="z-20 flex items-center gap-4">
-            {step !== AppStep.SELECT_STYLE && (
+            {step !== AppStep.API_KEY_INPUT && (
               <div className="px-3 py-1 border-2 border-black bg-yellow-400 font-bold text-xs uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                Step {step === AppStep.SELECT_FEATURES ? '2' : step === AppStep.INPUT_DETAILS ? '3' : '4'} / 4
+                Step {getStepNumber()} / 4
+              </div>
+            )}
+            {step !== AppStep.API_KEY_INPUT && apiKey && (
+              <div className="px-3 py-1 border-2 border-black bg-green-400 font-bold text-xs uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                🔑 API 연결됨
               </div>
             )}
           </div>
@@ -158,21 +180,30 @@ const App: React.FC = () => {
       </header>
 
       <main className="flex-1 pb-12 w-full">
+        {step === AppStep.API_KEY_INPUT && (
+          <div className="animate-fade-in-up">
+            <ApiKeyInput
+              initialApiKey={apiKey}
+              onSubmit={handleApiKeySubmit}
+            />
+          </div>
+        )}
+
         {step === AppStep.SELECT_STYLE && (
           <div className="animate-fade-in-up">
-            <StyleSelector 
+            <StyleSelector
               initialData={{ logoUrl: requirements.logoUrl, homepageUrl: requirements.homepageUrl, customFiles: requirements.customStyleFiles }}
-              onSelect={handleStyleSelect} 
+              onSelect={handleStyleSelect}
             />
           </div>
         )}
 
         {step === AppStep.SELECT_FEATURES && (
           <div className="animate-fade-in-up">
-            <FeatureSelector 
+            <FeatureSelector
               initialSelected={selectedFeatureIds}
-              onNext={handleFeaturesSelect} 
-              onBack={() => setStep(AppStep.SELECT_STYLE)} 
+              onNext={handleFeaturesSelect}
+              onBack={() => setStep(AppStep.SELECT_STYLE)}
             />
           </div>
         )}

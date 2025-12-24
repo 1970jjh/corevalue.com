@@ -126,11 +126,12 @@ Include all JavaScript in a <script> tag before </body>.
 
 export const generateLandingPage = async (
   style: LandingPageStyle,
-  requirements: UserRequirements
+  requirements: UserRequirements,
+  apiKey: string
 ): Promise<string> => {
-  if (!process.env.API_KEY) throw new Error("API Key Missing");
+  if (!apiKey) throw new Error("API Key Missing");
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey });
 
   const featurePrompts = requirements.selectedFeatureIds
     .map(id => `- ${ADDITIONAL_FEATURES.find(f => f.id === id)?.promptModifier}`)
@@ -210,7 +211,7 @@ ${featurePrompts || 'Standard hover effects and smooth scroll'}
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash-preview-05-20",
       contents: { parts },
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,

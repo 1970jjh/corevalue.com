@@ -53,6 +53,7 @@ export interface UserRequirements {
 }
 
 export enum AppStep {
+  API_KEY_INPUT,
   SELECT_STYLE,
   SELECT_FEATURES,
   INPUT_DETAILS,
