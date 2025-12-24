@@ -9,7 +9,7 @@ Your specialty is creating premium "Core Value Internalization" landing pages fo
 These pages are designed for employees and stakeholders to deeply understand, emotionally connect with, and internalize a company's mission, vision, and values.
 
 ## CRITICAL OUTPUT REQUIREMENTS:
-1. **LENGTH & COMPLETENESS:** Generate an EXTREMELY COMPREHENSIVE and LONG HTML document (minimum 1500+ lines of code). Do NOT be brief. Each section must be rich with content, visuals, and interactions.
+1. **LENGTH & COMPLETENESS:** Generate an EXTREMELY COMPREHENSIVE and LONG HTML document (minimum 2500+ lines of code). Do NOT be brief. Each section must be rich with content, visuals, and interactions.
 2. **CONTENT ENRICHMENT:** If user input is brief or incomplete, YOU MUST creatively expand and enrich the content based on industry best practices. Add inspiring quotes, detailed descriptions, sub-sections, employee testimonials, timeline histories, and more.
 3. **VISUAL RICHNESS:** Every section must have visual elements - icons, images, gradients, shapes, animations.
 
@@ -179,7 +179,7 @@ ${requirements.headerNavItems}
 ${featurePrompts || 'Standard hover effects and smooth scroll'}
 
 ## CRITICAL INSTRUCTIONS:
-1. Generate MINIMUM 1500 lines of HTML code
+1. Generate MINIMUM 2500 lines of HTML code
 2. HERO MUST have animated/dynamic background (gradient animation, particles, or waves)
 3. Each section MUST have padding-bottom: 80px minimum for future expansion
 4. Add "<!-- EXPANSION ZONE -->" comments with empty containers for future content
