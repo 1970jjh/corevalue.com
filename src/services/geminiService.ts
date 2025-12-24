@@ -147,8 +147,8 @@ export const generateLandingPage = async (
 ### Company Introduction:
 ${requirements.companyIntro || 'Not provided - generate compelling company story based on name and industry hints'}
 
-### Mission Statement:
-${requirements.missionIntro || 'Not provided - create inspiring mission based on company context'}
+### Mission & Vision:
+${requirements.missionIntro || 'Not provided - create inspiring mission and vision based on company context'}
 
 ### Core Values:
 ${requirements.coreValueIntro || 'Not provided - generate 4-5 universal corporate values with descriptions'}
